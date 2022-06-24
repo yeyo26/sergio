@@ -34,7 +34,7 @@ const personaSchema = new mongoose.Schema({
     },
     foto:{
         type:String,
-        minLength:5
+        default:""
     },
     estado:{
         type:Number,

@@ -1,9 +1,10 @@
 import {Router} from "express"
 import { check } from "express-validator"
-import {personaPost,personaLogin,personaDelete,personaput,personaGetId,personaActivar,personaDesactivar,personaMostar} from "../controllers/persona.js"
+import {personaPost,personaLogin,personaDelete,personaput,personaGetId,personaActivar,personaDesactivar,personaMostar,cargarFoto} from "../controllers/persona.js"
 import { validarCampos } from "../middlewares/middleware.js"
 import helpersUsuarios from "../helpers/persona.js"
 import { validarJWT } from "../middlewares/validar.js"
+import validarArchivo from "../middlewares/validar-archivo.js"
 
 const router=new Router()
 
@@ -41,6 +42,14 @@ router.put('/desactivar/:id',[
     check('id','ingrese id a desactivar').not().isEmpty(),
     validarCampos
 ],personaDesactivar)
+
+router.post('/foto/:id',[
+    validarJWT,
+    check('id', 'No es un ID válido').isMongoId(),
+    check('id').custom(helpersUsuarios.existeUsuarioById), 
+    validarArchivo,
+    validarCampos
+],cargarFoto)
 
 
 

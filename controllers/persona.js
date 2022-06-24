@@ -1,6 +1,7 @@
 import Persona from "../models/persona.js"
 import bcryptjs from "bcryptjs" 
 import {generarJWT} from "../middlewares/validar.js"
+import subirArchivo from "../helpers/subir-archivo.js"
 
 const personaMostar=async (req, res) => {
     const persona= await Persona.find();
@@ -8,8 +9,8 @@ const personaMostar=async (req, res) => {
     
 }
 const personaPost = async(req,res)=>{
-    const {email,password,nombre,apellido,edad,alias,foto}=req.body
-    const persona= new Persona({email,password,nombre,apellido,edad,alias,foto})
+    const {email,password,nombre,apellido,edad,alias,foto,estado}=req.body
+    const persona= new Persona({email,password,nombre,apellido,edad,alias,foto,estado})
     const salt= bcryptjs.genSaltSync(10)
     persona.password=bcryptjs.hashSync(password, salt)
     persona.save()
@@ -79,8 +80,38 @@ const personaDesactivar=async (req, res) => {
     })
 }
 
+const cargarFoto=async (req, res) => {
+    const { id } = req.params;
+    try {
+        let nombre
+        await subirArchivo(req.files, undefined)
+            .then(value => nombre = value)
+            .catch((err) => console.log(err));
+
+        //persona a la cual pertenece la foto
+        let persona = await Persona.findById(id);
+        if (persona.foto) {
+            const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+            const pathImage = path.join(__dirname, '../uploads/', persona.foto);
+            
+            if (fs.existsSync(pathImage)) {
+                console.log('Existe archivo');
+                fs.unlinkSync(pathImage)
+            }
+            
+        }
+       
+        persona = await Persona.findByIdAndUpdate(id, { foto: nombre })
+        //responder
+        res.json({ nombre });
+    } catch (error) {
+        res.status(400).json({ error, 'general': 'Controlador' })
+    }
+
+}
 
 
 
 
-export{personaPost,personaLogin,personaDelete,personaput,personaGetId,personaActivar,personaDesactivar,personaMostar}
+
+export{personaPost,personaLogin,personaDelete,personaput,personaGetId,personaActivar,personaDesactivar,personaMostar,cargarFoto}
